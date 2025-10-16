@@ -24,9 +24,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
-        HashMap<String,User> userCacheMap = new HashMap<>();
+        CacheMap<User> userCacheMap = new CacheMap<>();
         Optional<User> user = userRepository.findByUsername(username);
-        user.ifPresent(value -> userCacheMap.put(username, value));
+        user.ifPresent(value -> userCacheMap.put(username, value,1000));
         return user;
     }
 }
