@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 用户服务实现类
@@ -20,13 +23,27 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     private UserRepository userRepository;
-    
+
+    ExecutorService executor = Executors.newFixedThreadPool(10);
+
+    ThreadLocal<User> local = new ThreadLocal<>();
+
+
+
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
-        HashMap<String,User> userCacheMap = new HashMap<>();
         Optional<User> user = userRepository.findByUsername(username);
-        user.ifPresent(value -> userCacheMap.put(username, value));
+        if(user.isPresent()){
+            executor.submit(
+                    ()->{
+                        local.set(user.get());
+                    }
+            );
+        }
         return user;
+    }
+    public User getUser(){
+        return local.get();
     }
 }
