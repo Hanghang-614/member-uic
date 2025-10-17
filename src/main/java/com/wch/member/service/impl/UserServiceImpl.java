@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -20,11 +22,15 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     private UserRepository userRepository;
+
+    private static HashMap<String,User> userCacheMap = new HashMap<>();
     
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
-        HashMap<String,User> userCacheMap = new HashMap<>();
+        if(userCacheMap.containsKey(username)){
+            return Optional.of(userCacheMap.get(username));
+        }
         Optional<User> user = userRepository.findByUsername(username);
         user.ifPresent(value -> userCacheMap.put(username, value));
         return user;
