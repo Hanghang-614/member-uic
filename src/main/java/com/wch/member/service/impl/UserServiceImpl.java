@@ -19,16 +19,21 @@ import java.util.Optional;
 @Transactional
 public class UserServiceImpl implements UserService {
 
+    private Integer MAX_QUERY_TIME = 10;
+
+    private Integer NOW_QUERY_TIME = 0;
+
     @Autowired
     private UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
-        HashMap<String,User> userCacheMap = new HashMap<>();
-        Optional<User> user = userRepository.findByUsername(username);
-        user.ifPresent(value -> userCacheMap.put(username, value));
-        return user;
+        NOW_QUERY_TIME ++;
+        if(NOW_QUERY_TIME.equals(MAX_QUERY_TIME)){
+            return Optional.empty();
+        }
+        return userRepository.findByUsername(username);
     }
 
     @Override
