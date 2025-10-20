@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,10 +18,10 @@ import java.util.Optional;
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
@@ -28,5 +29,11 @@ public class UserServiceImpl implements UserService {
         Optional<User> user = userRepository.findByUsername(username);
         user.ifPresent(value -> userCacheMap.put(username, value));
         return user;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> findHotUsers() {
+        return userRepository.findByIsHotTrue();
     }
 }
