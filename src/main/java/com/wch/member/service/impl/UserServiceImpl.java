@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -35,5 +36,20 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public List<User> findHotUsers() {
         return userRepository.findByIsHotTrue();
+    }
+    public List<User> findHotUsers(List<String> userNameList){
+        List<User> byIsHotTrue = userRepository.findByIsHotTrue();
+        CacheMap<User> userCacheMap = new CacheMap<>();
+        for(User user : byIsHotTrue){
+            userCacheMap.put(user.getUsername(), user,1000);
+        }
+        ArrayList<User> users = new ArrayList<>();
+        for(String userName : userNameList){
+            User user = userCacheMap.get(userName);
+            if(user != null){
+                users.add(user);
+            }
+        }
+        return users;
     }
 }
