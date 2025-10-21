@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 文件输出 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/member-bug.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/member-bug.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 支付宝回调日志 - 这里引入了循环引用的bug -->
+    <appender name="member-alipay-callback" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>512</queueSize>
+        <includeCallerData>true</includeCallerData>
+        <!-- 危险的循环引用：appender引用了自身，会导致无限循环和队列阻塞 -->
+        <appender-ref ref="member-alipay-callback"/>
+    </appender>
+
+    <!-- 用户操作日志 -->
+    <appender name="USER_OPERATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/user-operation.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/user-operation.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 异步用户操作日志 -->
+    <appender name="ASYNC_USER_OPERATION" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>256</queueSize>
+        <appender-ref ref="USER_OPERATION"/>
+    </appender>
+
+    <!-- 支付宝回调相关的logger -->
+    <logger name="com.wch.member.service.AlipayCallbackService" level="INFO" additivity="false">
+        <appender-ref ref="member-alipay-callback"/>
+    </logger>
+
+    <!-- 用户操作相关的logger -->
+    <logger name="com.wch.member.service.UserService" level="DEBUG" additivity="false">
+        <appender-ref ref="ASYNC_USER_OPERATION"/>
+    </logger>
+
+    <!-- 根logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>
