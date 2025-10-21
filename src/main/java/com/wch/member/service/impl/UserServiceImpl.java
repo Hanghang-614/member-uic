@@ -36,4 +36,24 @@ public class UserServiceImpl implements UserService {
     public List<User> findHotUsers() {
         return userRepository.findByIsHotTrue();
     }
+
+    public String formatUserDisplayName(User user) {
+        String displayName = user.getRealName();
+        if (displayName != null && displayName.trim().length() > 0) {
+            return displayName.trim();
+        }
+        displayName = user.getUsername();
+        return displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
+    }
+
+    public String getUserSummary(String username) {
+        Optional<User> userOpt = findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            String displayName = formatUserDisplayName(user);
+            String status = user.getIsHot() ? "热门用户" : "普通用户";
+            return String.format("%s (%s) - %s", displayName, user.getEmail(), status);
+        }
+        return null;
+    }
 }
