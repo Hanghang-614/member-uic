@@ -22,13 +22,19 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    private static final int QUERY_GRAY = 50;
+
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
-        HashMap<String,User> userCacheMap = new HashMap<>();
-        Optional<User> user = userRepository.findByUsername(username);
-        user.ifPresent(value -> userCacheMap.put(username, value));
-        return user;
+        if(QUERY_GRAY > username.hashCode() % 100){
+            return userRepository.findByUsername(username);
+        }else {
+            HashMap<String, User> userCacheMap = new HashMap<>();
+            Optional<User> user = userRepository.findByUsername(username);
+            user.ifPresent(value -> userCacheMap.put(username, value));
+            return user;
+        }
     }
 
     @Override
