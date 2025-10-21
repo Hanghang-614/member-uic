@@ -39,7 +39,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<User> findHotUsers() {
-        sendSmsCode();
         return userRepository.findByIsHotTrue();
     }
 
