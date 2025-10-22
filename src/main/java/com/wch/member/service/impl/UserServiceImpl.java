@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 用户服务实现类
@@ -21,6 +22,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    private static final ConcurrentHashMap<String, User> userCache = new ConcurrentHashMap<>();
 
     @Override
     @Transactional(readOnly = true)
@@ -35,5 +38,22 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public List<User> findHotUsers() {
         return userRepository.findByIsHotTrue();
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserFromCache(String username) {
+        User cachedUser = userCache.get(username);
+        if (cachedUser != null) {
+            return cachedUser;
+        }
+
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            userCache.put(username, user);
+            return user;
+        }
+
+        return null;
     }
 }
