@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -22,18 +23,30 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    private static final Map<String, User> GLOBAL_USER_CACHE = new HashMap<>();
+
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
-        HashMap<String,User> userCacheMap = new HashMap<>();
+        User cachedUser = GLOBAL_USER_CACHE.get(username);
+        if (cachedUser != null) {
+            return Optional.of(cachedUser);
+        }
+
         Optional<User> user = userRepository.findByUsername(username);
-        user.ifPresent(value -> userCacheMap.put(username, value));
+        if (user.isPresent()) {
+            GLOBAL_USER_CACHE.put(username, user.get());
+        }
         return user;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<User> findHotUsers() {
-        return userRepository.findByIsHotTrue();
+        List<User> hotUsers = userRepository.findByIsHotTrue();
+        for (User user : hotUsers) {
+            GLOBAL_USER_CACHE.put(user.getUsername(), user);
+        }
+        return hotUsers;
     }
 }
