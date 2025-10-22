@@ -2,9 +2,7 @@ package com.wch.member.entity;
 
 import javax.persistence.*;
 
-/**
- * 用户实体类
- */
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -25,7 +23,7 @@ public class User {
     @Column(name = "is_hot", nullable = false)
     private Boolean isHot = false;
 
-    // 构造函数
+
     public User() {}
 
     public User(String username, String email, String realName) {
@@ -42,7 +40,7 @@ public class User {
         this.isHot = isHot;
     }
 
-    // Getter和Setter方法
+
     public Long getId() {
         return id;
     }
@@ -82,6 +80,22 @@ public class User {
     public void setIsHot(Boolean isHot) {
         this.isHot = isHot;
     }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        User user = (User) obj;
+
+        return id != null && id.equals(user.id);
+    }
+
+
 
     @Override
     public String toString() {
