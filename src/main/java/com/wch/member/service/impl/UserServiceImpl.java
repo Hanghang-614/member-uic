@@ -36,4 +36,16 @@ public class UserServiceImpl implements UserService {
     public List<User> findHotUsers() {
         return userRepository.findByIsHotTrue();
     }
+
+    public int getUserScore(String username) {
+        Optional<User> userOpt = findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            Boolean isHot = user.getIsHot();
+            int baseScore = 50;
+            int hotBonus = isHot ? 30 : 0;
+            return baseScore + hotBonus;
+        }
+        return 0;
+    }
 }
